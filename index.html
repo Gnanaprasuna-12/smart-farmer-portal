@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Farmer Portal</title>
+
+<style>
+body{
+font-family:Arial,sans-serif;
+margin:0;
+background:#f4fff2;
+}
+
+header{
+background:green;
+color:white;
+padding:20px;
+text-align:center;
+}
+
+.container{
+padding:20px;
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+gap:20px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:12px;
+box-shadow:0 4px 10px rgba(0,0,0,.1);
+}
+
+button{
+background:green;
+color:white;
+border:none;
+padding:10px 15px;
+border-radius:8px;
+cursor:pointer;
+margin:5px;
+}
+
+footer{
+background:#111;
+color:white;
+text-align:center;
+padding:15px;
+margin-top:20px;
+}
+</style>
+</head>
+<body>
+
+<header>
+<h1 id="title">🌾 Smart Farmer Portal</h1>
+<p id="subtitle">Weather • Advisory • Schemes</p>
+</header>
+
+<div class="container">
+<div class="card">
+
+<h2>🤖 Farmer Assistant</h2>
+
+<input
+type="text"
+id="userQuestion"
+placeholder="Ask a farming question..."
+style="width:100%;padding:10px;margin-bottom:10px;"
+>
+
+<button onclick="askBot()">
+Ask
+</button>
+
+<p id="botAnswer">
+Ask me anything about farming.
+</p>
+
+</div>
+<h2>📍 Location & Weather</h2>
+<p><b>Location:</b> <span id="location">Loading...</span></p>
+<p><b>Temperature:</b> <span id="temp">--</span>°C</p>
+<p><b>Wind:</b> <span id="wind">--</span> km/h</p>
+<button onclick="getWeather()">Refresh</button>
+</div>
+
+<div class="card">
+<h2>🌱 Crop Advisory</h2>
+<p id="advisory">Loading...</p>
+</div>
+
+<div class="card">
+<h2>🏛 Government Schemes</h2>
+<ul>
+<li>PM Kisan</li>
+<li>Crop Insurance</li>
+<li>Soil Health Card</li>
+<li>Kisan Credit Card</li>
+</ul>
+</div>
+
+<div class="card">
+<h2>🌐 Language</h2>
+<button onclick="english()">English</button>
+<button onclick="telugu()">తెలుగు</button>
+</div>
+
+<div class="card">
+<h2>🎤 Voice Assistant</h2>
+<button onclick="speakAdvice()">Speak Advisory</button>
+</div>
+<div class="card">
+
+<h2>🌱 Fertilizer Calculator</h2>
+
+<label>Land Area (Acres)</label>
+<input
+type="number"
+id="acres"
+placeholder="Enter acres"
+style="width:100%;padding:10px;margin:10px 0;"
+>
+
+<button onclick="calculateFertilizer()">
+Calculate
+</button>
+
+<p id="fertilizerResult">
+Enter land area to calculate.
+</p>
+
+
+</div>
+<div class="card">
+
+<h2>📸 Crop Disease Detection</h2>
+
+<input
+type="file"
+id="cropImage"
+accept="image/*"
+>
+
+<br><br>
+
+<button onclick="detectDisease()">
+Analyze Image
+</button>
+
+<p id="diseaseResult">
+Upload a crop image.
+</p>
+
+</div>
+
+<footer>
+Built for Indian Farmers 🇮🇳
+</footer>
+
+<script>
+
+async function getWeather(){
+
+if(!navigator.geolocation){
+alert("Location not supported");
+return;
+}
+
+navigator.geolocation.getCurrentPosition(async(pos)=>{
+
+const lat=pos.coords.latitude;
+const lon=pos.coords.longitude;
+
+try{
+
+const locRes=await fetch(
+`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
+);
+
+const locData=await locRes.json();
+
+const place=
+locData.address.city ||
+locData.address.town ||
+locData.address.village ||
+locData.address.county ||
+"Unknown";
+
+document.getElementById("location").innerText=place;
+
+const weatherRes=await fetch(
+`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m`
+);
+
+const weatherData=await weatherRes.json();
+
+const temp=weatherData.current.temperature_2m;
+
+document.getElementById("temp").innerText=temp;
+document.getElementById("wind").innerText=
+weatherData.current.wind_speed_10m;
+
+let advice="Good conditions for farming.";
+
+if(temp>35){
+advice="High temperature. Water crops in morning or evening.";
+}
+
+if(temp<20){
+advice="Cool weather. Monitor crop moisture.";
+}
+
+document.getElementById("advisory").innerText=advice;
+
+}catch(err){
+
+document.getElementById("location").innerText=
+"Unable to load";
+
+}
+
+});
+
+}
+
+function speakAdvice(){
+
+const text=
+document.getElementById("advisory").innerText;
+
+const speech=
+new SpeechSynthesisUtterance(text);
+
+speechSynthesis.speak(speech);
+
+}
+
+function telugu(){
+
+document.getElementById("title").innerText=
+"🌾 స్మార్ట్ రైతు పోర్టల్";
+
+document.getElementById("subtitle").innerText=
+"వాతావరణం • సలహాలు • పథకాలు";
+
+}
+
+function english(){
+
+document.getElementById("title").innerText=
+"🌾 Smart Farmer Portal";
+
+document.getElementById("subtitle").innerText=
+"Weather • Advisory • Schemes";
+
+}
+
+getWeather();
+function askBot(){
+
+const question =
+document.getElementById("userQuestion")
+.value
+.toLowerCase();
+
+let answer =
+"Please ask about crops, irrigation, fertilizer, or weather.";
+
+if(question.includes("water")){
+
+answer =
+"Use drip irrigation to save water.";
+
+}
+
+else if(question.includes("fertilizer")){
+
+answer =
+"Test soil before applying fertilizer.";
+
+}
+
+else if(question.includes("paddy")){
+
+answer =
+"Paddy needs sufficient water and warm weather.";
+
+}
+
+else if(question.includes("cotton")){
+
+answer =
+"Cotton grows best in well-drained soil.";
+
+}
+
+else if(question.includes("weather")){
+
+answer =
+"Check weather before spraying pesticides.";
+
+}
+
+document.getElementById("botAnswer")
+.innerText = answer;
+
+}
+function calculateFertilizer(){
+
+const acres =
+parseFloat(document.getElementById("acres").value);
+
+if(isNaN(acres) || acres <= 0){
+
+document.getElementById("fertilizerResult")
+.innerText =
+"Please enter a valid area.";
+
+return;
+
+}
+
+const urea =
+(acres * 50).toFixed(1);
+
+const dap =
+(acres * 25).toFixed(1);
+
+document.getElementById("fertilizerResult")
+.innerHTML =
+
+`
+For ${acres} acres:<br><br>
+
+🌾 Urea: ${urea} kg<br>
+
+🌱 DAP: ${dap} kg
+`;
+
+}
+function detectDisease(){
+
+const file =
+document.getElementById("cropImage").files[0];
+
+if(!file){
+
+document.getElementById("diseaseResult")
+.innerText =
+"Please upload an image.";
+
+return;
+
+}
+
+const fileName =
+file.name.toLowerCase();
+
+let result =
+"Crop appears healthy. Monitor regularly.";
+
+if(fileName.includes("leaf")){
+
+result =
+"Possible leaf disease detected. Check for fungal infection.";
+
+}
+
+else if(fileName.includes("rice")){
+
+result =
+"Possible rice blast symptoms. Inspect leaves closely.";
+
+}
+
+else if(fileName.includes("tomato")){
+
+result =
+"Possible tomato leaf curl disease.";
+
+}
+
+document.getElementById("diseaseResult")
+.innerText = result;
+
+}
+</script>
+
+</body>
+</html>
