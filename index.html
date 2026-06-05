@@ -74,6 +74,9 @@ style="width:100%;padding:10px;margin-bottom:10px;"
 <button onclick="askBot()">
 Ask
 </button>
+<button onclick="startVoice()">
+🎤 Speak
+</button>
 
 <p id="botAnswer">
 Ask me anything about farming.
@@ -225,6 +228,49 @@ document.getElementById("location").innerText=
 });
 
 }
+const knowledge = {
+
+"ఎరువు":"నేల పరీక్ష ఆధారంగా ఎరువులు వేయడం ఉత్తమం.",
+
+"వరి":"వరి పంటకు తగిన నీటి నిర్వహణ మరియు కలుపు నియంత్రణ అవసరం.",
+
+"పత్తి":"పత్తి పంటకు బాగా నీరు వెళ్లే నేల అనుకూలంగా ఉంటుంది.",
+
+"టమాటా":"టమాటా పంటకు క్రమం తప్పకుండా నీరు అందించాలి.",
+
+"మిర్చి":"మిర్చి పంటలో త్రిప్స్ మరియు మైట్స్‌ను పరిశీలించండి.",
+
+"మొక్కజొన్న":"మొక్కజొన్న పంటకు సరైన నత్రజని ఎరువు అవసరం.",
+
+"వర్షం":"భారీ వర్షాల ముందు నీటి పారుదల ఏర్పాటు చేయండి.",
+
+"నీరు":"డ్రిప్ ఇరిగేషన్ ద్వారా నీటిని ఆదా చేయవచ్చు.",
+
+"పురుగు":"పురుగు నివారణకు సిఫార్సు చేసిన మందులను మాత్రమే వాడండి.",
+
+"ఆకులు":"ఆకులు పసుపు రంగులోకి మారితే పోషక లోపం ఉండవచ్చు.",
+
+"ఎండ":"అధిక ఎండలో ఉదయం లేదా సాయంత్రం నీరు పెట్టండి.",
+
+"నేల":"నేల పరీక్ష చేయించి ఎరువుల ప్రణాళిక రూపొందించండి.",
+
+"కలుపు":"కలుపు మొక్కలను ప్రారంభ దశలోనే తొలగించండి.",
+
+"వ్యాధి":"వ్యాధి లక్షణాలు కనిపిస్తే వ్యవసాయ అధికారిని సంప్రదించండి.",
+
+"సేంద్రియ":"సేంద్రియ ఎరువులు నేల ఆరోగ్యాన్ని మెరుగుపరుస్తాయి.",
+
+"పశువులు":"పశువులకు శుభ్రమైన నీరు మరియు సమతుల్య ఆహారం అందించండి.",
+
+"పాలు":"పాల ఉత్పత్తి పెరగడానికి పశువులకు సరైన పోషణ అవసరం.",
+
+"విత్తనం":"ధృవీకరించిన విత్తనాలను ఉపయోగించడం మంచిది.",
+
+"నాటు":"నాటు సమయంలో సరైన దూరం పాటించాలి.",
+
+"పంట":"పంట మార్పిడి నేల సారాన్ని కాపాడుతుంది."
+
+};
 
 function speakAdvice(){
 
@@ -262,50 +308,61 @@ getWeather();
 function askBot(){
 
 const question =
-document.getElementById("userQuestion")
-.value
-.toLowerCase();
+document.getElementById("userQuestion").value;
 
 let answer =
-"Please ask about crops, irrigation, fertilizer, or weather.";
+"ఈ ప్రశ్నకు సమాచారం అందుబాటులో లేదు.";
 
-if(question.includes("water")){
+for(const key in knowledge){
 
-answer =
-"Use drip irrigation to save water.";
+if(question.includes(key)){
 
-}
-
-else if(question.includes("fertilizer")){
-
-answer =
-"Test soil before applying fertilizer.";
+answer = knowledge[key];
+break;
 
 }
 
-else if(question.includes("paddy")){
-
-answer =
-"Paddy needs sufficient water and warm weather.";
-
 }
 
-else if(question.includes("cotton")){
+document.getElementById("botAnswer").innerText = answer;
 
-answer =
-"Cotton grows best in well-drained soil.";
+const speech =
+new SpeechSynthesisUtterance(answer);
 
-}
+speech.lang = "te-IN";
 
-else if(question.includes("weather")){
-
-answer =
-"Check weather before spraying pesticides.";
+speechSynthesis.speak(speech);
 
 }
+function startVoice(){
 
-document.getElementById("botAnswer")
-.innerText = answer;
+const SpeechRecognition =
+window.SpeechRecognition ||
+window.webkitSpeechRecognition;
+
+if(!SpeechRecognition){
+alert("Voice recognition not supported");
+return;
+}
+
+const recognition =
+new SpeechRecognition();
+
+recognition.lang = "te-IN";
+
+recognition.start();
+
+recognition.onresult = function(event){
+
+const text =
+event.results[0][0].transcript;
+
+document.getElementById("userQuestion").value =
+text;
+
+askBot();
+
+};
 
 }
 function calculateFertilizer(){
